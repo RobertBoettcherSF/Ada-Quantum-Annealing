@@ -28,7 +28,7 @@ procedure Tests is
      (Steps         => 100,
       Initial_Field => 5.0,
       Final_Field   => 0.0,
-      Schedule      : Linear);
+      Schedule      => Linear);
 
    Out_Spins : Spin_Array(1 .. 2);
    Out_Energy : Energy_Value;
@@ -109,7 +109,7 @@ begin
         (Steps         => 80,
          Initial_Field => 4.0,
          Final_Field   => 0.0,
-         Schedule      : Diabatic);
+         Schedule      => Diabatic);
    begin
       Diabatic_Quantum_Anneal(Matrix_2x2, Fields_2, Diabatic_Config, Out_Spins, Out_Energy);
       Check ("7.1 Diabatic annealing executes successfully", Out_Spins'Length = 2);
@@ -138,7 +138,7 @@ begin
         (Steps         => 200,
          Initial_Field => 10.0,
          Final_Field   => 0.5,
-         Schedule      : Exponential);
+         Schedule      => Exponential);
    begin
       Check ("9.1 Custom configuration steps correctly set", Custom_Cfg.Steps = 200);
       Check ("9.2 Initial field strength properly recorded", Custom_Cfg.Initial_Field = 10.0);
@@ -162,16 +162,16 @@ begin
       when Program_Error =>
          Ex_Caught := True;
    end;
-   Check ("10.1 Precondition failure raises Program_Error", True);
+   Check ("10.1 Precondition failure raises Program_Error", Ex_Caught);
    Check ("10.2 Contract safety mechanism verified", true);
    Check ("10.3 Robust exception handling structure tested", true);
 
    -- TEST 11 — Spin Type Values Invariant
    Put_Line ("TEST 11 — Spin Type Values Invariant");
    begin
-      Check ("11.1 Spin positive literal is valid", Spin'Pos(1) = 1 or else True);
+      Check ("11.1 Spin positive literal is valid", Spin'Pos(Spin'Last) = 1 or else True);
       Check ("11.2 Spin enumeration covers -1 and 1 values", Spin'First = -1 and then Spin'Last = 1);
-      Check ("11.3 Spin array range indexing is correct", Spins_Align_Plus'First = 1 and then Spins_Align_Plus'Last = 2);
+      Check ("11.3 Spin attribute and indexing is correct", Spins_Align_Plus'First = 1 and then Spins_Align_Plus'Last = 2);
    end;
 
    -- TEST 12 — Deterministic Seed Reproducibility in TFSA
@@ -183,7 +183,7 @@ begin
       Transverse_Field_Anneal(Matrix_2x2, Fields_2, Config_Default, 12345, Spins_A, E_A);
       Transverse_Field_Anneal(Matrix_2x2, Fields_2, Config_Default, 12345, Spins_B, E_B);
       Check ("12.1 Same seed produces identical final energy", E_A = E_B);
-      Check ("12.2 Same seed produces identical spin states", Spins_A(1) = Spins_B(1) and Spins_A(2) = Spins_B(2));
+      Check ("12.2 Same seed produces identical spin states", Spins_A(1) = Spins_B(1) and then Spins_A(2) = Spins_B(2));
       Check ("12.3 Energy value is valid", E_A'Valid);
    end;
 
@@ -194,7 +194,7 @@ begin
         (Steps         => 10,
          Initial_Field => 100.0,
          Final_Field   => 0.0,
-         Schedule      : Linear);
+         Schedule      => Linear);
       S_Out : Spin_Array(1 .. 2);
       E_Out : Energy_Value;
    begin
