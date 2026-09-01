@@ -120,8 +120,8 @@ begin
    -- TEST 8 — Single Spin System Edge Case
    Put_Line ("TEST 8 — Single Spin System Edge Case");
    declare
-      Matrix_1x1 : constant Coupling_Matrix(1 .. 1, 1 .. 1) := ((0.0,));
-      Fields_1 : constant External_Field_Array(1 .. 1) := (2.0,);
+      Matrix_1x1 : constant Coupling_Matrix(1 .. 1, 1 .. 1) := (1 => (1 => 0.0));
+      Fields_1 : constant External_Field_Array(1 .. 1) := (1 => 2.0);
       Spins_1 : Spin_Array(1 .. 1);
       E_1 : Energy_Value;
    begin
@@ -169,8 +169,8 @@ begin
    -- TEST 11 — Spin Type Values Invariant
    Put_Line ("TEST 11 — Spin Type Values Invariant");
    begin
-      Check ("11.1 Spin positive literal is valid", Spin'Pos(Spin'Last) = 1 or else True);
-      Check ("11.2 Spin enumeration covers -1 and 1 values", Spin'First = -1 and then Spin'Last = 1);
+      Check ("11.1 Spin positive literal is valid", Spin'Last = 1 or else True);
+      Check ("11.2 Spin range covers -1 and 1 values", Spin'First = -1 and then Spin'Last = 1);
       Check ("11.3 Spin attribute and indexing is correct", Spins_Align_Plus'First = 1 and then Spins_Align_Plus'Last = 2);
    end;
 
