@@ -206,8 +206,9 @@ package body Quantum_Annealing is
             Progress : constant Float := Float(Step) / Float(Config.Steps);
             Field_Strength : constant Float := Float(Config.Initial_Field) * (1.0 - Progress) + Float(Config.Final_Field) * Progress;
             
-            -- Pick a random spin to flip (quantum tunneling attempt)
-            Flip_Idx : constant Integer := Integer(Ada.Numerics.Float_Random.Random(Gen) * Float(N)) + 1;
+            -- Pick a random spin to flip (quantum tunneling attempt) using Float'Floor to prevent rounding up out of bounds
+            Flip_Rnd : constant Float := Ada.Numerics.Float_Random.Random(Gen);
+            Flip_Idx : constant Integer := Integer(Float'Floor(Flip_Rnd * Float(N))) + 1;
             Target_Idx : constant Spin_Index := Spin_Index(Flip_Idx);
          begin
             -- Trial flip
