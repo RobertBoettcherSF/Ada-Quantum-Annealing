@@ -8,7 +8,7 @@
 
 package Quantum_Annealing is
 
-   type Spin is (-1, 1);
+   type Spin is range -1 .. 1;
    type Spin_Index is range 1 .. 32;
    type Spin_Array is array (Spin_Index range <>) of Spin;
 
