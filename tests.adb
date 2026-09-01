@@ -18,11 +18,11 @@ procedure Tests is
 
    -- Helper test fixtures
    Matrix_2x2 : constant Coupling_Matrix(1 .. 2, 1 .. 2) :=
-     ((0.0, 1.0),
-      (1.0, 0.0));
-   Fields_2 : constant External_Field_Array(1 .. 2) := (0.0, 0.0);
-   Spins_Align_Plus : constant Spin_Array(1 .. 2) := (1, 1);
-   Spins_Align_Anti : constant Spin_Array(1 .. 2) := (1, -1);
+     [ [0.0, 1.0],
+       [1.0, 0.0] ];
+   Fields_2 : constant External_Field_Array(1 .. 2) := [0.0, 0.0];
+   Spins_Align_Plus : constant Spin_Array(1 .. 2) := [1, 1];
+   Spins_Align_Anti : constant Spin_Array(1 .. 2) := [1, -1];
 
    Config_Default : constant Annealing_Config :=
      (Steps         => 100,
@@ -43,13 +43,13 @@ begin
    begin
       Check ("1.1 Ferromagnetic energy alignment gives negative value", E1 = -1.0);
       Check ("1.2 Anti-ferromagnetic energy alignment gives positive value", E2 = 1.0);
-      Check ("1.3 Energy is of correct domain type", Energy_Value'Valid(E1));
+      Check ("1.3 Energy is of correct domain type", E1'Valid);
    end;
 
    -- TEST 2 — Compute Ising Energy with External Magnetic Field
    Put_Line ("TEST 2 — Compute Ising Energy with External Magnetic Field");
    declare
-      Field_H : constant External_Field_Array(1 .. 2) := (1.0, 1.0);
+      Field_H : constant External_Field_Array(1 .. 2) := [1.0, 1.0];
       E_Field : constant Energy_Value := Compute_Ising_Energy(Spins_Align_Plus, Matrix_2x2, Field_H);
    begin
       Check ("2.1 Energy includes external field contribution", E_Field = -3.0);
@@ -70,11 +70,11 @@ begin
    Put_Line ("TEST 4 — Transverse Field Simulated Annealing 4-Spin System");
    declare
       Matrix_4x4 : constant Coupling_Matrix(1 .. 4, 1 .. 4) :=
-        ((0.0, 1.0, 0.0, 1.0),
-         (1.0, 0.0, 1.0, 0.0),
-         (0.0, 1.0, 0.0, 1.0),
-         (1.0, 0.0, 1.0, 0.0));
-      Fields_4 : constant External_Field_Array(1 .. 4) := (0.0, 0.0, 0.0, 0.0);
+        [ [0.0, 1.0, 0.0, 1.0],
+          [1.0, 0.0, 1.0, 0.0],
+          [0.0, 1.0, 0.0, 1.0],
+          [1.0, 0.0, 1.0, 0.0] ];
+      Fields_4 : constant External_Field_Array(1 .. 4) := [0.0, 0.0, 0.0, 0.0];
       Spins_4 : Spin_Array(1 .. 4);
       E_4 : Energy_Value;
    begin
@@ -120,8 +120,8 @@ begin
    -- TEST 8 — Single Spin System Edge Case
    Put_Line ("TEST 8 — Single Spin System Edge Case");
    declare
-      Matrix_1x1 : constant Coupling_Matrix(1 .. 1, 1 .. 1) := (1 => (1 => 0.0));
-      Fields_1 : constant External_Field_Array(1 .. 1) := (1 => 2.0);
+      Matrix_1x1 : constant Coupling_Matrix(1 .. 1, 1 .. 1) := [ [0.0] ];
+      Fields_1 : constant External_Field_Array(1 .. 1) := [2.0];
       Spins_1 : Spin_Array(1 .. 1);
       E_1 : Energy_Value;
    begin
@@ -150,9 +150,9 @@ begin
    Ex_Caught := False;
    begin
       declare
-         Bad_Matrix : constant Coupling_Matrix(1 .. 2, 1 .. 2) := ((0.0, 0.0), (0.0, 0.0));
-         Bad_Fields : constant External_Field_Array(1 .. 3) := (0.0, 0.0, 0.0);
-         Bad_Spins  : constant Spin_Array(1 .. 2) := (1, 1);
+         Bad_Matrix : constant Coupling_Matrix(1 .. 2, 1 .. 2) := [ [0.0, 0.0], [0.0, 0.0] ];
+         Bad_Fields : constant External_Field_Array(1 .. 3) := [0.0, 0.0, 0.0];
+         Bad_Spins  : constant Spin_Array(1 .. 2) := [1, 1];
          Dummy_E    : Energy_Value;
          pragma Warnings (Off, Dummy_E);
       begin
