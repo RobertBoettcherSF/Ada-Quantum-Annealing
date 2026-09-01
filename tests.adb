@@ -1,4 +1,5 @@
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Assertions; use Ada.Assertions;
 with Quantum_Annealing; use Quantum_Annealing;
 
 procedure Tests is
@@ -159,7 +160,7 @@ begin
          Dummy_E := Compute_Ising_Energy(Bad_Spins, Bad_Matrix, Bad_Fields);
       end;
    exception
-      when Program_Error =>
+      when Assertion_Error | Program_Error =>
          Ex_Caught := True;
    end;
    Check ("10.1 Precondition failure raises Program_Error", Ex_Caught);
@@ -194,7 +195,7 @@ begin
         (Steps         => 10,
          Initial_Field => 100.0,
          Final_Field   => 0.0,
-         Schedule      => Linear);
+      Schedule      => Linear);
       S_Out : Spin_Array(1 .. 2);
       E_Out : Energy_Value;
    begin
