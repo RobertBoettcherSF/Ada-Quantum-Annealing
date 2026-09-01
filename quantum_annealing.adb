@@ -15,10 +15,10 @@ package body Quantum_Annealing is
    is
       N : constant Natural := Spins'Length;
       Energy : Energy_Value := 0.0;
-      Base_Index : constant Integer := Spins'First;
-      Coupl_Base_1 : constant Integer := Couplings'First(1);
-      Coupl_Base_2 : constant Integer := Couplings'First(2);
-      Field_Base : constant Integer := Fields'First;
+      Base_Index : constant Integer := Integer(Spins'First);
+      Coupl_Base_1 : constant Integer := Integer(Couplings'First(1));
+      Coupl_Base_2 : constant Integer := Integer(Couplings'First(2));
+      Field_Base : constant Integer := Integer(Fields'First);
    begin
       -- Calculate interaction term: - sum_{i < j} J_ij s_i s_j
       for I in 0 .. N - 1 loop
@@ -60,20 +60,19 @@ package body Quantum_Annealing is
    is
       N : constant Natural := Couplings'Length(1);
       Num_States : constant Natural := 2 ** N;
-      type State_Index is range 0 .. Num_States - 1;
       
       -- Real and Imaginary parts of state amplitudes for exact Schrödinger evolution
-      type Amplitude_Array is array (State_Index) of Float;
-      Real_Amp : Amplitude_Array := (others => 0.0);
-      Imag_Amp : Amplitude_Array := (others => 0.0);
+      type Amplitude_Array is array (Integer range <>) of Float;
+      Real_Amp : Amplitude_Array(0 .. Num_States - 1) := [others => 0.0];
+      Imag_Amp : Amplitude_Array(0 .. Num_States - 1) := [others => 0.0];
       
-      Best_State : State_Index := 0;
+      Best_State : Integer := 0;
       Min_E : Energy_Value := 1.0E30;
       
       -- Initialize equal superposition
       Norm : constant Float := Sqrt(Float(Num_States));
    begin
-      for S in State_Index loop
+      for S in 0 .. Num_States - 1 loop
          Real_Amp(S) := 1.0 / Norm;
          Imag_Amp(S) := 0.0;
       end loop;
@@ -97,13 +96,13 @@ package body Quantum_Annealing is
             end if;
 
             -- Simulate approximate Hamiltonian phase rotation and quantum tunneling mixing
-            for S in State_Index loop
+            for S in 0 .. Num_States - 1 loop
                -- Decode state S into spins
                declare
                   Curr_Spins : Spin_Array(1 .. Spin_Index(N));
                begin
                   for Bit_Idx in 0 .. N - 1 loop
-                     if (Integer(S) and (2 ** Bit_Idx)) /= 0 then
+                     if (S and Integer(2 ** Bit_Idx)) /= 0 then
                         Curr_Spins(Spin_Index(Bit_Idx + 1)) := 1;
                      else
                         Curr_Spins(Spin_Index(Bit_Idx + 1)) := -1;
@@ -132,10 +131,10 @@ package body Quantum_Annealing is
 
             -- Apply transverse field mixing (tunneling between adjacent Hamming states)
             if Gamma > 0.0 then
-               for S in State_Index loop
+               for S in 0 .. Num_States - 1 loop
                   for Bit_Idx in 0 .. N - 1 loop
                      declare
-                        Neighbor : constant State_Index := State_Index(Integer(S) xor (2 ** Bit_Idx));
+                        Neighbor : constant Integer := S xor Integer(2 ** Bit_Idx);
                      begin
                         Real_Amp(Neighbor) := Real_Amp(Neighbor) + 0.05 * Gamma * Real_Amp(S);
                      end;
@@ -146,9 +145,9 @@ package body Quantum_Annealing is
       end loop;
 
       -- Decode Best_State into Best_Spins
-      Best_Spins := (others => -1);
+      Best_Spins := [others => -1];
       for Bit_Idx in 0 .. N - 1 loop
-         if (Integer(Best_State) and (2 ** Bit_Idx)) /= 0 then
+         if (Best_State and Integer(2 ** Bit_Idx)) /= 0 then
             Best_Spins(Spin_Index(Bit_Idx + 1)) := 1;
          else
             Best_Spins(Spin_Index(Bit_Idx + 1)) := -1;
