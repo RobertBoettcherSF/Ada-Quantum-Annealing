@@ -42,7 +42,7 @@ package body Quantum_Annealing is
             H_Val : constant Energy_Value := Energy_Value(Fields(Spin_Index(Field_Base + I)));
          begin
             Energy := Energy - H_Val * Si;
-         end loop;
+         end;
       end loop;
 
       return Energy;
@@ -206,22 +206,22 @@ package body Quantum_Annealing is
             declare
                Trial_E : constant Energy_Value := Compute_Ising_Energy(Current_Spins, Couplings, Fields);
                Delta_E : constant Energy_Value := Trial_E - Current_E;
-               Accept : Boolean := False;
+               Accepted : Boolean := False;
             begin
                if Delta_E < 0.0 then
-                  Accept := True;
+                  Accepted := True;
                else
                   -- Transverse field tunneling probability acceptance criterion
                   declare
                      Tunnel_Prob : constant Float := Exp(-Float(Delta_E) / (0.1 + Field_Strength));
                   begin
                      if Ada.Numerics.Float_Random.Random(Gen) < Tunnel_Prob then
-                        Accept := True;
+                        Accepted := True;
                      end if;
                   end;
-               end.
+               end if;
 
-               if Accept then
+               if Accepted then
                   Current_E := Trial_E;
                   if Current_E < Best_E then
                      Best_E := Current_E;
@@ -253,7 +253,7 @@ package body Quantum_Annealing is
         (Steps         => Steps,
          Initial_Field => 5.0,
          Final_Field   => 0.0,
-         Schedule      : Linear);
+         Schedule      => Linear);
    begin
       if Couplings'Length(1) <= 6 then
          Adiabatic_Quantum_Anneal(Couplings, Fields, Config, Best_Spins, Final_Energy);
@@ -276,7 +276,7 @@ package body Quantum_Annealing is
         (Steps         => Steps,
          Initial_Field => 5.0,
          Final_Field   => 0.0,
-         Schedule      : Exponential);
+         Schedule      => Exponential);
    begin
       if Couplings'Length(1) <= 6 then
          Adiabatic_Quantum_Anneal(Couplings, Fields, Config, Best_Spins, Final_Energy);
