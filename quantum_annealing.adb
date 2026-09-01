@@ -60,21 +60,22 @@ package body Quantum_Annealing is
    is
       N : constant Natural := Couplings'Length(1);
       Num_States : constant Natural := 2 ** N;
+      type State_Mask is mod 2 ** 32;
       
       -- Real and Imaginary parts of state amplitudes for exact Schrödinger evolution
       type Amplitude_Array is array (Integer range <>) of Float;
       Real_Amp : Amplitude_Array(0 .. Num_States - 1) := [others => 0.0];
       Imag_Amp : Amplitude_Array(0 .. Num_States - 1) := [others => 0.0];
       
-      Best_State : Integer := 0;
+      Best_State : State_Mask := 0;
       Min_E : Energy_Value := 1.0E30;
       
       -- Initialize equal superposition
       Norm : constant Float := Sqrt(Float(Num_States));
    begin
-      for S in 0 .. Num_States - 1 loop
-         Real_Amp(S) := 1.0 / Norm;
-         Imag_Amp(S) := 0.0;
+      for S_Val in 0 .. Num_States - 1 loop
+         Real_Amp(S_Val) := 1.0 / Norm;
+         Imag_Amp(S_Val) := 0.0;
       end loop;
 
       -- Time evolution simulation across steps
@@ -96,49 +97,58 @@ package body Quantum_Annealing is
             end if;
 
             -- Simulate approximate Hamiltonian phase rotation and quantum tunneling mixing
-            for S in 0 .. Num_States - 1 loop
-               -- Decode state S into spins
+            for S_Val in 0 .. Num_States - 1 loop
                declare
-                  Curr_Spins : Spin_Array(1 .. Spin_Index(N));
+                  S : constant State_Mask := State_Mask(S_Val);
                begin
-                  for Bit_Idx in 0 .. N - 1 loop
-                     if (S and Integer(2 ** Bit_Idx)) /= 0 then
-                        Curr_Spins(Spin_Index(Bit_Idx + 1)) := 1;
-                     else
-                        Curr_Spins(Spin_Index(Bit_Idx + 1)) := -1;
-                     end if;
-                  end loop;
-
+                  -- Decode state S into spins
                   declare
-                     E : constant Energy_Value := Compute_Ising_Energy(Curr_Spins, Couplings, Fields);
-                     Phase : constant Float := -(Alpha * Float(E)) * 0.01;
-                     Cos_P : constant Float := Cos(Phase);
-                     Sin_P : constant Float := Sin(Phase);
-                     New_Real : constant Float := Real_Amp(S) * Cos_P - Imag_Amp(S) * Sin_P;
-                     New_Imag : constant Float := Real_Amp(S) * Sin_P + Imag_Amp(S) * Cos_P;
+                     Curr_Spins : Spin_Array(1 .. Spin_Index(N));
                   begin
-                     Real_Amp(S) := New_Real;
-                     Imag_Amp(S) := New_Imag;
+                     for Bit_Idx in 0 .. N - 1 loop
+                        if (S and State_Mask'(2 ** Bit_Idx)) /= 0 then
+                           Curr_Spins(Spin_Index(Bit_Idx + 1)) := 1;
+                        else
+                           Curr_Spins(Spin_Index(Bit_Idx + 1)) := -1;
+                        end if;
+                     end loop;
 
-                     -- Track best energy found during evolution
-                     if E < Min_E then
-                        Min_E := E;
-                        Best_State := S;
-                     end if;
+                     declare
+                        E : constant Energy_Value := Compute_Ising_Energy(Curr_Spins, Couplings, Fields);
+                        Phase : constant Float := -(Alpha * Float(E)) * 0.01;
+                        Cos_P : constant Float := Cos(Phase);
+                        Sin_P : constant Float := Sin(Phase);
+                        New_Real : constant Float := Real_Amp(S_Val) * Cos_P - Imag_Amp(S_Val) * Sin_P;
+                        New_Imag : constant Float := Real_Amp(S_Val) * Sin_P + Imag_Amp(S_Val) * Cos_P;
+                     begin
+                        Real_Amp(S_Val) := New_Real;
+                        Imag_Amp(S_Val) := New_Imag;
+
+                        -- Track best energy found during evolution
+                        if E < Min_E then
+                           Min_E := E;
+                           Best_State := S;
+                        end if;
+                     end;
                   end;
                end;
             end loop;
 
             -- Apply transverse field mixing (tunneling between adjacent Hamming states)
             if Gamma > 0.0 then
-               for S in 0 .. Num_States - 1 loop
-                  for Bit_Idx in 0 .. N - 1 loop
-                     declare
-                        Neighbor : constant Integer := S xor Integer(2 ** Bit_Idx);
-                     begin
-                        Real_Amp(Neighbor) := Real_Amp(Neighbor) + 0.05 * Gamma * Real_Amp(S);
-                     end;
-                  end loop;
+               for S_Val in 0 .. Num_States - 1 loop
+                  declare
+                     S : constant State_Mask := State_Mask(S_Val);
+                  begin
+                     for Bit_Idx in 0 .. N - 1 loop
+                        declare
+                           Neighbor : constant State_Mask := S xor State_Mask'(2 ** Bit_Idx);
+                           Neighbor_Val : constant Integer := Integer(Neighbor);
+                        begin
+                           Real_Amp(Neighbor_Val) := Real_Amp(Neighbor_Val) + 0.05 * Gamma * Real_Amp(S_Val);
+                        end;
+                     end loop;
+                  end;
                end loop;
             end if;
          end;
@@ -147,7 +157,7 @@ package body Quantum_Annealing is
       -- Decode Best_State into Best_Spins
       Best_Spins := [others => -1];
       for Bit_Idx in 0 .. N - 1 loop
-         if (Best_State and Integer(2 ** Bit_Idx)) /= 0 then
+         if (Best_State and State_Mask'(2 ** Bit_Idx)) /= 0 then
             Best_Spins(Spin_Index(Bit_Idx + 1)) := 1;
          else
             Best_Spins(Spin_Index(Bit_Idx + 1)) := -1;
